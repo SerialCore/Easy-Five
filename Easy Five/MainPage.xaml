@@ -34,11 +34,9 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Image Source="Images/white.png" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center"/>
-                <TextBlock x:Name="white_count" Grid.Row="1" Grid.Column="1" Foreground="White" FontSize="25"
-                       VerticalAlignment="Center" HorizontalAlignment="Center">0</TextBlock>
-                <Image Source="Images/reset.png" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center"
-                       Tapped="Reset_Tapped" Margin="10,0,10,0"/>
+                <Image Grid.Row="0" Grid.Column="1" Source="Images/white.png" HorizontalAlignment="Center"/>
+                <FontIcon Grid.Row="0" Grid.Column="1" Glyph="&#xE99A;" Tag="robot" Foreground="Black" FontSize="40" Tapped="WhiteMan_Tapped"/>
+                <FontIcon Grid.Row="2" Grid.Column="1" x:Name="gameswitch" Glyph="&#xE102;" Tag="end" Foreground="White" FontSize="40" Tapped="Reset_Tapped"/>
             </Grid>
 
             <Grid Grid.Column="2" Background="White">
@@ -52,17 +50,15 @@
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <Image Source="Images/black.png" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center"/>
-                <TextBlock x:Name="black_count" Grid.Row="1" Grid.Column="1" Foreground="Black" FontSize="25"
-                       VerticalAlignment="Center" HorizontalAlignment="Center">0</TextBlock>
-                <Image Source="Images/return.png" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center"
-                       Tapped="Return_Tapped" Margin="10,0,10,0"/>
+                <Image Grid.Row="0" Grid.Column="1" Source="Images/black.png" HorizontalAlignment="Center"/>
+                <FontIcon Grid.Row="0" Grid.Column="1" Glyph="&#xE13D;" Tag="person" Foreground="White" FontSize="40" Tapped="BlackMan_Tapped"/>
+                <FontIcon Grid.Row="2" Grid.Column="1" Glyph="&#xE845;" Tag="end" Foreground="Black" FontSize="40" Tapped="Return_Tapped"/>
             </Grid>
 
             <Viewbox Grid.Column="1" >
                 <Grid>
-                    <Image x:Name="board" Source="Images/board.png" PointerReleased="board_PointerReleased"/>
-                    <Grid x:Name="board_grid" >
+                    <Image x:Name="boardpanel" Source="Images/board.png" PointerReleased="Board_PointerReleased"/>
+                    <Grid x:Name="boardgrid" >
                         <Grid.RowDefinitions >
                             <RowDefinition />
                             <RowDefinition />

@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
+using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 
@@ -29,8 +22,14 @@ namespace Easy_Five
             this.InitializeComponent();
         }
 
-        private Playing playing = new Playing();
-        private bool IsCurrentBlack = true;
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            board = new GameBoard();
+        }
+
+        #region Game
+
+        private GameBoard board = null;
 
         private void AddBlack(int index)
         {
@@ -40,7 +39,7 @@ namespace Easy_Five
             image.Source = bm;
             image.VerticalAlignment = VerticalAlignment.Stretch;
             image.HorizontalAlignment = HorizontalAlignment.Stretch;
-            (board_grid.Children.ElementAt(index) as Grid).Children.Add(image);
+            (boardgrid.Children.ElementAt(index) as Grid).Children.Add(image);
         }
 
         private void AddWhite(int index)
@@ -51,7 +50,7 @@ namespace Easy_Five
             image.Source = bm;
             image.VerticalAlignment = VerticalAlignment.Stretch;
             image.HorizontalAlignment = HorizontalAlignment.Stretch;
-            (board_grid.Children.ElementAt(index) as Grid).Children.Add(image);
+            (boardgrid.Children.ElementAt(index) as Grid).Children.Add(image);
         }
 
         private void ClearGame()
@@ -60,91 +59,173 @@ namespace Easy_Five
             {
                 for (int j = 0; j < 15; j++)
                 {
-                    if (playing.ChessBoard[i, j] != 0)
+                    if (board.ChessBoard[i, j] != 0)
                     {
-                        playing.ChessBoard[i, j] = 0;
-                        (board_grid.Children.ElementAt(i * 15 + j) as Grid).Children.Clear();
+                        board.ChessBoard[i, j] = 0;
+                        (boardgrid.Children.ElementAt(i * 15 + j) as Grid).Children.Clear();
                     }
                 }
             }
-            playing.whiteCount = 0;
-            playing.blackCount = 0;
-            black_count.Text = playing.blackCount.ToString();
-            white_count.Text = playing.whiteCount.ToString();
-            IsCurrentBlack = true;
+            board.IsPlaying = false;
         }
 
         private async void Play(int row, int col)
         {
             int index = row * 15 + col;
-            if (IsCurrentBlack)
+            if (board.IsCurrentBlack)
             {
                 AddBlack(index);
-                playing.Cursor[0] = row;
-                playing.Cursor[1] = col;
-                playing.ChessBoard[row, col] = 1;
-                IsCurrentBlack = !IsCurrentBlack;
-
-                playing.blackCount++;
-                black_count.Text = playing.blackCount.ToString();
-                if (playing.Win(1))
+                board.Cursor.X = row;
+                board.Cursor.Y = col;
+                board.ChessBoard[row, col] = 1;
+                board.IsCurrentBlack = !board.IsCurrentBlack;
+                if (board.GameWin(1))
                 {
                     await new MessageDialog("Black Win").ShowAsync();
-                    ClearGame();
+                    return;
+                }
+
+                if (!board.IsPersonWhite)
+                {
+                    Point next = board.ComputerNextStep(2);
+                    AddWhite(next.X * 15 + next.Y);
+                    board.Cursor.X = next.X;
+                    board.Cursor.Y = next.Y;
+                    board.ChessBoard[next.X, next.Y] = 2;
+                    board.IsCurrentBlack = !board.IsCurrentBlack;
+                    if (board.GameWin(2))
+                    {
+                        await new MessageDialog("White Win").ShowAsync();
+                    }
                 }
             }
             else
             {
                 AddWhite(index);
-                playing.Cursor[0] = row;
-                playing.Cursor[1] = col;
-                playing.ChessBoard[row, col] = 2;
-                IsCurrentBlack = !IsCurrentBlack;
-
-                playing.whiteCount++;
-                white_count.Text = playing.whiteCount.ToString();
-                if (playing.Win(2))
+                board.Cursor.X = row;
+                board.Cursor.Y = col;
+                board.ChessBoard[row, col] = 2;
+                board.IsCurrentBlack = !board.IsCurrentBlack;
+                if (board.GameWin(2))
                 {
                     await new MessageDialog("White Win").ShowAsync();
-                    ClearGame();
+                    return;
+                }
+
+                if (!board.IsPersonBlack)
+                {
+                    Point next = board.ComputerNextStep(1);
+                    AddBlack(next.X * 15 + next.Y);
+                    board.Cursor.X = next.X;
+                    board.Cursor.Y = next.Y;
+                    board.ChessBoard[next.X, next.Y] = 1;
+                    board.IsCurrentBlack = !board.IsCurrentBlack;
+                    if (board.GameWin(1))
+                    {
+                        await new MessageDialog("Black Win").ShowAsync();
+                    }
                 }
             }
         }
 
-        private void board_PointerReleased(object sender, PointerRoutedEventArgs e)
+        #endregion
+
+        #region Control
+
+        private void Board_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (!board.IsPlaying)
+                return;
+
             Image image = sender as Image;
-            Point point = e.GetCurrentPoint(image).Position;
+            Windows.Foundation.Point point = e.GetCurrentPoint(image).Position;
             int row, col;
             row = (int)Math.Floor(point.Y * 15 / image.ActualHeight);
             col = (int)Math.Floor(point.X * 15 / image.ActualWidth);
             Play(row, col);
         }
 
+        private void WhiteMan_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (board.IsPlaying)
+                return;
+
+            FontIcon icon = (FontIcon)sender;
+            if (icon.Tag as string == "robot")
+            {
+                icon.Glyph = "\uE13D";
+                icon.Tag = "person";
+                board.IsPersonWhite = true;
+            }
+            else
+            {
+                icon.Glyph = "\uE99A";
+                icon.Tag = "robot";
+                board.IsPersonWhite = false;
+            }
+        }
+
+        private void BlackMan_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (board.IsPlaying)
+                return;
+
+            FontIcon icon = (FontIcon)sender;
+            if (icon.Tag as string == "person")
+            {
+                icon.Glyph = "\uE99A";
+                icon.Tag = "robot";
+                board.IsPersonBlack = false;
+            }
+            else
+            {
+                icon.Glyph = "\uE13D";
+                icon.Tag = "person";
+                board.IsPersonBlack = true;
+            }
+        }
+
         private void Reset_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            ClearGame();
+            FontIcon icon = (FontIcon)sender;
+            if (icon.Tag as string == "end")
+            {
+                icon.Glyph = "\uE15B";
+                icon.Tag = "start";
+                board.StartGame();
+            }
+            else
+            {
+                icon.Glyph = "\uE102"; 
+                icon.Tag = "end";
+                ClearGame();
+            }
         }
 
         private void Return_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            int index = playing.Cursor[0] * 15 + playing.Cursor[1];
-            UIElementCollection children = (board_grid.Children.ElementAt(index) as Grid).Children;
+            if (!board.IsPlaying)
+                return;
+
+            board.ChessBoard[board.Cursor.X, board.Cursor.Y] = 0;
+            int index = board.Cursor.X * 15 + board.Cursor.Y;
+            UIElementCollection children = (boardgrid.Children.ElementAt(index) as Grid).Children;
             if (children.Count() != 0)
             {
                 children.Clear();
-                IsCurrentBlack = !IsCurrentBlack;
-                if (IsCurrentBlack)
+                board.IsCurrentBlack = !board.IsCurrentBlack;
+                if (board.IsCurrentBlack)
                 {
-                    playing.blackCount--;
-                    black_count.Text = playing.blackCount.ToString();
+                    ; // blackCount--
                 }
                 else
                 {
-                    playing.whiteCount--;
-                    white_count.Text = playing.whiteCount.ToString();
+                    ; // whiteCount--
                 }
             }
         }
+
+        #endregion
+
     }
 }

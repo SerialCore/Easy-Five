@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="16496zhwx.3061351BAC423" Publisher="CN=73D1BF38-7322-4954-A5E9-541DD3BC2D66" Version="1.5.54.0" />
+  <Identity Name="16496zhwx.3061351BAC423" Publisher="CN=73D1BF38-7322-4954-A5E9-541DD3BC2D66" Version="1.6.55.0" />
   <mp:PhoneIdentity PhoneProductId="c22a9bde-921f-4a25-9c6b-2d315e62134b" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Easy Five</DisplayName>
