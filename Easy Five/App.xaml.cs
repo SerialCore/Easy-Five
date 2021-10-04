@@ -21,12 +21,6 @@ namespace Easy_Five
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
-
-            try
-            {
-                UWPnode.Handler.Start();
-            }
-            catch { }
         }
 
         /// <summary>
